@@ -30,11 +30,50 @@ namespace detail {
             return gen;
         }
     }
+
+    template <typename T>
+    struct construct_fn {
+        template <typename... Ts>
+        T operator()(Ts&& ... ts) const noexcept(noexcept(T(std::forward<Ts>(ts)...))) {
+            return T(std::forward<Ts>(ts)...);
+        }
+    };
+
+    struct print_fn {
+        template <typename... Ts>
+        void operator()(Ts&& ... ts) const {
+            (std::cout << ... << ts);
+        }
+    };
+
+    template <typename T>
+    struct binded_print_to_fn {
+        T& stream_ref;
+
+        template <typename... Ts>
+        void operator()(Ts&& ... ts) const {
+            (stream_ref << ... << ts);
+        }
+    };
+
+    struct print_to_fn {
+        template <typename T>
+        auto operator()(T&& t) const noexcept {
+            return binded_print_to_fn<T>(t);
+        }
+    };
 }
 
 namespace easy {
     thread_local std::mt19937_64 random_engine =
             detail::random::get_seeded_generator();
+
+    template <typename T>
+    inline constexpr detail::construct_fn<T> construct;
+
+    inline constexpr detail::print_fn print;
+
+    inline constexpr detail::print_to_fn print_to;
 }
 
 std::ostream& operator<<(
@@ -56,4 +95,3 @@ std::ostream& operator<<(
 
     return out << ']';
 }
-
