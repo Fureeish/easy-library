@@ -34,14 +34,14 @@ namespace detail {
     template <typename T>
     struct construct_fn {
         template <typename... Ts>
-        T operator()(Ts&&... ts) const {
+        T operator()(Ts&& ... ts) const noexcept(noexcept(T(std::forward<Ts>(ts)...))) {
             return T(std::forward<Ts>(ts)...);
         }
     };
 
     struct print_fn {
         template <typename... Ts>
-        void operator()(Ts&&... ts) const {
+        void operator()(Ts&& ... ts) const {
             (std::cout << ... << ts);
         }
     };
@@ -51,14 +51,14 @@ namespace detail {
         T& stream_ref;
 
         template <typename... Ts>
-        void operator()(Ts&&... ts) const {
+        void operator()(Ts&& ... ts) const {
             (stream_ref << ... << ts);
         }
     };
 
     struct print_to_fn {
         template <typename T>
-        auto operator()(T&& t) const {
+        auto operator()(T&& t) const noexcept {
             return binded_print_to_fn<T>(t);
         }
     };
@@ -95,4 +95,3 @@ std::ostream& operator<<(
 
     return out << ']';
 }
-
