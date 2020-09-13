@@ -5,6 +5,7 @@
 #include <iostream>
 #include <random>
 #include <ranges>
+#include <string>
 
 namespace detail {
     namespace random {
