@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <functional>
 #include <iostream>
+#include <cmath>
 #include <random>
 #include <ranges>
 #include <string>
@@ -32,37 +33,63 @@ namespace detail {
         }
     }
 
-    template <typename T>
-    struct construct_fn {
-        template <typename... Ts>
-        T operator()(Ts&& ... ts) const noexcept(noexcept(T(std::forward<Ts>(ts)...))) {
-            return T(std::forward<Ts>(ts)...);
-        }
-    };
+    namespace functors {
+        struct even_fn {
+            constexpr
+            bool operator()(std::integral auto&& e) const noexcept {
+                return e % 2 == 0;
+            }
+        };
 
-    struct print_fn {
-        template <typename... Ts>
-        void operator()(Ts&& ... ts) const {
-            (std::cout << ... << ts);
-        }
-    };
+        struct binded_power_fn {
+            double exponent;
 
-    template <typename T>
-    struct binded_print_to_fn {
-        T& stream_ref;
+            constexpr
+            auto operator()(std::integral auto&& e) const noexcept {
+                return std::pow(e, exponent);
+            }
+        };
 
-        template <typename... Ts>
-        void operator()(Ts&& ... ts) const {
-            (stream_ref << ... << ts);
-        }
-    };
+        struct power_fn {
+            constexpr
+            auto operator()(std::integral auto&& exponent) const noexcept {
+                return binded_power_fn(exponent);
+            }
+        };
 
-    struct print_to_fn {
         template <typename T>
-        auto operator()(T&& t) const noexcept {
-            return binded_print_to_fn<T>(t);
-        }
-    };
+        struct construct_fn {
+            template <typename... Ts>
+            T operator()(Ts&& ... ts) const noexcept(noexcept(T(
+                    std::forward<Ts>(ts)...))) {
+                return T(std::forward<Ts>(ts)...);
+            }
+        };
+
+        struct print_fn {
+            template <typename... Ts>
+            void operator()(Ts&& ... ts) const {
+                (std::cout << ... << ts);
+            }
+        };
+
+        template <typename T>
+        struct binded_print_to_fn {
+            T& stream_ref;
+
+            template <typename... Ts>
+            void operator()(Ts&& ... ts) const {
+                (stream_ref << ... << ts);
+            }
+        };
+
+        struct print_to_fn {
+            template <typename T>
+            auto operator()(T&& t) const noexcept {
+                return binded_print_to_fn<T>(t);
+            }
+        };
+    }
 }
 
 namespace easy {
@@ -70,11 +97,18 @@ namespace easy {
             detail::random::get_seeded_generator();
 
     template <typename T>
-    inline constexpr detail::construct_fn<T> construct;
+    inline constexpr detail::functors::construct_fn<T> construct;
 
-    inline constexpr detail::print_fn print;
+    inline constexpr detail::functors::print_fn print;
 
-    inline constexpr detail::print_to_fn print_to;
+    inline constexpr detail::functors::print_to_fn print_to;
+
+    inline constexpr detail::functors::even_fn even;
+
+    inline constexpr detail::functors::power_fn pow;
+
+    inline constexpr detail::functors::binded_power_fn square =
+            detail::functors::power_fn{}(2);
 }
 
 std::ostream& operator<<(
@@ -83,13 +117,13 @@ std::ostream& operator<<(
 ) requires (!std::is_convertible_v<decltype(range), std::string>) {
     using namespace std::ranges;
 
-    if (empty(range)) {
+    auto current = begin(range);
+
+    if (current == end(range)) {
         return out << "[]";
     }
 
-    auto current = begin(range);
     out << '[' << *current;
-
     while (++current != end(range)) {
         out << ',' << *current;
     }
