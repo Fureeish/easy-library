@@ -36,7 +36,7 @@ namespace detail {
     namespace functors {
         struct even_fn {
             constexpr
-            bool operator()(std::integral auto&& e) const noexcept {
+            bool operator()(const std::integral auto& e) const noexcept {
                 return e % 2 == 0;
             }
         };
@@ -45,14 +45,14 @@ namespace detail {
             double exponent;
 
             constexpr
-            auto operator()(std::integral auto&& e) const noexcept {
+            auto operator()(const std::integral auto& e) const noexcept {
                 return std::pow(e, exponent);
             }
         };
 
         struct power_fn {
             constexpr
-            auto operator()(std::integral auto&& exponent) const noexcept {
+            auto operator()(const std::integral auto& exponent) const noexcept {
                 return binded_power_fn(exponent);
             }
         };
