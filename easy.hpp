@@ -41,7 +41,7 @@ namespace detail {
             }
         };
 
-        struct binded_power_fn {
+        struct bound_power_fn {
             double exponent;
 
             constexpr
@@ -53,7 +53,7 @@ namespace detail {
         struct power_fn {
             constexpr
             auto operator()(const std::integral auto& exponent) const noexcept {
-                return binded_power_fn(exponent);
+                return bound_power_fn(exponent);
             }
         };
 
@@ -74,7 +74,7 @@ namespace detail {
         };
 
         template <typename T>
-        struct binded_print_to_fn {
+        struct bound_print_to_fn {
             T& stream_ref;
 
             template <typename... Ts>
@@ -86,7 +86,7 @@ namespace detail {
         struct print_to_fn {
             template <typename T>
             auto operator()(T&& t) const noexcept {
-                return binded_print_to_fn<T>(t);
+                return bound_print_to_fn<T>(t);
             }
         };
     }
@@ -107,7 +107,7 @@ namespace easy {
 
     inline constexpr detail::functors::power_fn pow;
 
-    inline constexpr detail::functors::binded_power_fn square =
+    inline constexpr detail::functors::bound_power_fn square =
             detail::functors::power_fn{}(2);
 }
 
