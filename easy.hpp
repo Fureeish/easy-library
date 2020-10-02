@@ -84,7 +84,7 @@ namespace easy {
 }
 
 template <template <typename> typename T>
-auto operator|(std::ranges::range auto&& rng, detail::to_fn<T> to) {
+auto operator|(std::ranges::range auto&& rng, detail::to_fn<T>) {
     return T(std::ranges::begin(rng), std::ranges::end(rng));
 }
 
