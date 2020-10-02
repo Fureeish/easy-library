@@ -89,6 +89,9 @@ namespace detail {
                 return bound_print_to_fn<T>(t);
             }
         };
+
+        template <template <typename> typename T>
+        struct to_fn { };
     }
 }
 
@@ -107,18 +110,15 @@ namespace easy {
 
     inline constexpr detail::functors::power_fn pow;
 
-
     inline constexpr detail::functors::bound_power_fn square =
             detail::functors::power_fn{}(2);
 
-    inline constexpr detail::print_to_fn print_to;
-
     template <template <typename> typename T>
-    inline constexpr detail::to_fn<T> to;
+    inline constexpr detail::functors::to_fn<T> to;
 }
 
 template <template <typename> typename T>
-auto operator|(std::ranges::range auto&& rng, detail::to_fn<T>) {
+auto operator|(std::ranges::range auto&& rng, detail::functors::to_fn<T>) {
     return T(std::ranges::begin(rng), std::ranges::end(rng));
 }
 
