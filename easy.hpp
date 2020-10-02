@@ -63,6 +63,9 @@ namespace detail {
             return binded_print_to_fn<T>(t);
         }
     };
+
+    template <template <typename> typename T>
+    struct to_fn { };
 }
 
 namespace easy {
@@ -75,6 +78,14 @@ namespace easy {
     inline constexpr detail::print_fn print;
 
     inline constexpr detail::print_to_fn print_to;
+
+    template <template <typename> typename T>
+    inline constexpr detail::to_fn<T> to;
+}
+
+template <template <typename> typename T>
+auto operator|(std::ranges::range auto&& rng, detail::to_fn<T>) {
+    return T(std::ranges::begin(rng), std::ranges::end(rng));
 }
 
 std::ostream& operator<<(
