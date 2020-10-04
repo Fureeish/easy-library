@@ -119,6 +119,15 @@ namespace easy {
 
 template <template <typename> typename T>
 auto operator|(std::ranges::range auto&& rng, detail::functors::to_fn<T>) {
+    /*
+     * TODO: Either create a custom, copyable iterator that can wrap a reference
+     * TODO: to any range and iterate over it (extremely customised common_view)
+     * TODO: or instantiate the container (typename T) and, by SFINAE'ing on
+     * TODO: its methods (create local concepts for .add(x), .push_back(x) and
+     * TODO: for .insert(x) and constexpr-if on them) and adding every element
+     * TODO: of the given range to it.
+     */
+
     return T(std::ranges::begin(rng), std::ranges::end(rng));
 }
 
