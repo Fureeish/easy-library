@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <concepts>
 #include <functional>
 #include <iostream>
 #include <cmath>
@@ -119,16 +120,42 @@ namespace easy {
 
 template <template <typename> typename T>
 auto operator|(std::ranges::range auto&& rng, detail::functors::to_fn<T>) {
-    /*
-     * TODO: Either create a custom, copyable iterator that can wrap a reference
-     * TODO: to any range and iterate over it (extremely customised common_view)
-     * TODO: or instantiate the container (typename T) and, by SFINAE'ing on
-     * TODO: its methods (create local concepts for .add(x), .push_back(x) and
-     * TODO: for .insert(x) and constexpr-if on them) and adding every element
-     * TODO: of the given range to it.
-     */
+    using namespace std::ranges;
 
-    return T(std::ranges::begin(rng), std::ranges::end(rng));
+    using range_type = std::remove_cvref_t<decltype(rng)>;
+    using value_type = range_value_t<range_type>;
+
+    if constexpr(std::copyable<iterator_t<range_type>>) {
+        auto common = rng | views::common;
+        return T<value_type>(begin(common), end(common));
+    } else {
+        constexpr bool addable_via_add = requires(T<value_type> t) {
+            t.add(std::declval<value_type>());
+        };
+
+        constexpr bool addable_via_push_back = requires(T<value_type> t) {
+            t.push_back(std::declval<value_type>());
+        };
+
+        constexpr bool addable_via_insert = requires(T<value_type> t) {
+            t.insert(std::declval<value_type>());
+        };
+
+        auto container = T<value_type>();
+
+        if constexpr(addable_via_add) {
+            for (auto&& e : rng) container.add(e);
+        } else if constexpr (addable_via_push_back) {
+            for (auto&& e : rng) container.push_back(e);
+        } else if constexpr (addable_via_insert) {
+            for (auto&& e : rng) container.insert(e);
+        } else {
+            // TODO: some error handling / hard error or UB?
+        }
+
+        return container;
+    }
+
 }
 
 std::ostream& operator<<(
