@@ -94,6 +94,14 @@ namespace detail {
         template <template <typename> typename T>
         struct to_fn { };
     }
+
+    namespace utility {
+        template <typename... Ts>
+        constexpr bool always_false = false;
+
+        template <template <typename> typename... Ts>
+        constexpr bool always_false_template = false;
+    }
 }
 
 namespace easy {
@@ -150,7 +158,11 @@ auto operator|(std::ranges::range auto&& rng, detail::functors::to_fn<T>) {
         } else if constexpr (addable_via_insert) {
             for (auto&& e : rng) container.insert(e);
         } else {
-            // TODO: some error handling / hard error or UB?
+            static_assert(
+                    detail::utility::always_false_template<T>,
+                    "Rquired add(), push_back() or insert() methods for passed "
+                    "container that accept the value type"
+            );
         }
 
         return container;
