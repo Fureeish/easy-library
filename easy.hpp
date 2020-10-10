@@ -115,6 +115,11 @@ namespace easy {
 
     template <template <typename> typename T>
     inline constexpr detail::functors::to_fn<T> to;
+
+    template <typename T, typename U>
+    auto cast_to(const U& u) {
+        return static_cast<T>(u);
+    }
 }
 
 template <template <typename> typename T>
